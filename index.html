@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Senior Fitness / वरिष्ठ व्यायाम</title>
+  <style>
+    /* ── Reset & Base ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f0e8;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Top Bar ── */
+    .topbar {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px 8px;
+    }
+
+    .progress-text {
+      font-size: 18px;
+      color: #555;
+      font-weight: 600;
+    }
+
+    .lang-btn {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 24px;
+      padding: 10px 22px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+      min-width: 80px;
+    }
+    .lang-btn:active { background: #1b5e20; }
+
+    /* ── Main Card ── */
+    .card {
+      width: 100%;
+      max-width: 480px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 20px 20px;
+      gap: 14px;
+    }
+
+    .exercise-title {
+      font-size: 30px;
+      font-weight: 800;
+      color: #1a1a1a;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    /* ── Illustration Box ── */
+    .illustration-wrap {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      width: 100%;
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #e0d8c8;
+      position: relative;
+    }
+
+    /* If a real GIF is provided it shows here */
+    .illustration-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* CSS fallback illustration */
+    .illus-fallback {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      height: 100%;
+    }
+    .illus-icon {
+      font-size: 90px;
+      line-height: 1;
+      animation: bobbing 2s ease-in-out infinite;
+    }
+    .illus-label {
+      font-size: 15px;
+      color: #888;
+      text-align: center;
+      padding: 0 10px;
+    }
+    @keyframes bobbing {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    /* ── Description & Tip ── */
+    .desc {
+      font-size: 20px;
+      line-height: 1.55;
+      color: #222;
+    }
+
+    .tip {
+      background: #fff3e0;
+      border-left: 5px solid #ff8f00;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 18px;
+      color: #5d4037;
+      line-height: 1.5;
+    }
+
+    .reps-badge {
+      background: #e8f5e9;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #2e7d32;
+      text-align: center;
+    }
+
+    /* ── Buttons ── */
+    .btn-row {
+      display: flex;
+      gap: 14px;
+      margin-top: auto;
+      padding-top: 6px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 18px 10px;
+      border: none;
+      border-radius: 16px;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 64px;
+      touch-action: manipulation;
+      transition: filter 0.1s;
+    }
+    .btn:active { filter: brightness(0.9); }
+
+    .btn-listen {
+      background: #1565c0;
+      color: white;
+    }
+    .btn-next {
+      background: #2e7d32;
+      color: white;
+    }
+    .btn-prev {
+      background: #e0e0e0;
+      color: #333;
+      flex: 0 0 64px;
+      font-size: 26px;
+    }
+
+    /* ── Done Screen ── */
+    .done-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+      gap: 20px;
+      min-height: 80vh;
+    }
+    .done-screen.active { display: flex; }
+    .done-icon { font-size: 90px; }
+    .done-title { font-size: 32px; font-weight: 800; color: #2e7d32; }
+    .done-msg   { font-size: 22px; color: #444; line-height: 1.5; }
+    .btn-restart {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 22px;
+      font-weight: 700;
+      padding: 18px 40px;
+      cursor: pointer;
+      min-height: 64px;
+      margin-top: 10px;
+    }
+
+    /* ── Safety banner ── */
+    .safety-banner {
+      width: 100%;
+      max-width: 480px;
+      background: #fce4ec;
+      border-top: 3px solid #c62828;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #b71c1c;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* ── Welcome Screen ── */
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+      gap: 24px;
+      min-height: 90vh;
+      max-width: 480px;
+      width: 100%;
+    }
+    .welcome-screen.hidden { display: none; }
+    .app-icon { font-size: 80px; }
+    .welcome-title { font-size: 34px; font-weight: 800; color: #1a1a1a; line-height: 1.2; }
+    .welcome-sub   { font-size: 20px; color: #555; line-height: 1.5; }
+    .btn-start {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 24px;
+      font-weight: 700;
+      padding: 20px 60px;
+      cursor: pointer;
+      min-height: 68px;
+      margin-top: 10px;
+    }
+    .welcome-lang { display: flex; gap: 14px; }
+    .welcome-lang button {
+      flex: 1;
+      background: white;
+      border: 3px solid #2e7d32;
+      color: #2e7d32;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      padding: 14px 20px;
+      cursor: pointer;
+      min-height: 56px;
+    }
+    .welcome-lang button.selected {
+      background: #2e7d32;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     WELCOME SCREEN
+══════════════════════════════════════ -->
+<div class="welcome-screen" id="welcomeScreen">
+  <div class="app-icon">🧘</div>
+  <div class="welcome-title" id="welcomeTitle">Senior Fitness<br/>वरिष्ठ व्यायाम</div>
+  <div class="welcome-sub" id="welcomeSub">6 gentle exercises · 15 minutes<br/>No equipment needed</div>
+
+  <div style="width:100%;max-width:300px">
+    <p style="font-size:18px;margin-bottom:12px;color:#444;" id="chooseLangLabel">Choose language / भाषा चुनें</p>
+    <div class="welcome-lang">
+      <button onclick="setLang('en')" id="btnEn" class="selected">English</button>
+      <button onclick="setLang('hi')" id="btnHi">हिंदी</button>
+    </div>
+  </div>
+
+  <button class="btn-start" onclick="startApp()" id="btnStart">▶ Start / शुरू करें</button>
+
+  <p style="font-size:15px;color:#999;" id="doctorNote">Always consult your doctor before starting a new exercise routine.</p>
+</div>
+
+<!-- ══════════════════════════════════════
+     EXERCISE SCREEN
+══════════════════════════════════════ -->
+<div id="exerciseArea" style="display:none; flex-direction:column; align-items:center; width:100%;">
+
+  <div class="topbar">
+    <span class="progress-text" id="progressText">1 / 6</span>
+    <button class="lang-btn" onclick="toggleLang()" id="langToggle">हिंदी</button>
+  </div>
+
+  <div class="card">
+    <div class="exercise-title" id="exTitle">Chair Squat</div>
+
+    <div class="illustration-wrap" id="illustrationWrap">
+      <!-- Real GIF goes here: <img src="your-exercise.gif" alt="exercise demo" />  -->
+      <!-- Fallback CSS illustration shown until GIF is added -->
+      <div class="illus-fallback" id="illustFallback">
+        <div class="illus-icon" id="illustIcon">🪑</div>
+        <div class="illus-label" id="illustLabel">Tap Listen for audio guidance</div>
+      </div>
+    </div>
+
+    <div class="reps-badge" id="repsBadge">8 reps · 30 seconds</div>
+
+    <div class="desc" id="exDesc">
+      Stand slowly in front of a sturdy chair. Lower yourself back down gently. Hold the armrest for support.
+    </div>
+
+    <div class="tip" id="exTip">
+      ⚠️ Stop if you feel pain or dizziness.
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-prev" onclick="prevEx()" id="btnPrev" aria-label="Previous exercise">◀</button>
+      <button class="btn btn-listen" onclick="speakNow()" id="btnListen" aria-label="Listen to instructions">🔊 Listen</button>
+      <button class="btn btn-next" onclick="nextEx()" id="btnNext" aria-label="Next exercise">Next ▶</button>
+    </div>
+  </div>
+
+  <div class="safety-banner" id="safetyBanner">
+    Stop if you feel pain · Ask your doctor if unsure
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     DONE SCREEN
+══════════════════════════════════════ -->
+<div class="done-screen" id="doneScreen">
+  <div class="done-icon">🏆</div>
+  <div class="done-title" id="doneTitle">Well Done!</div>
+  <div class="done-msg" id="doneMsg">You completed all 6 exercises.<br/>Rest and drink some water.</div>
+  <button class="btn-restart" onclick="restart()" id="btnRestart">🔁 Do it again</button>
+</div>
+
+
+<script>
+// ══════════════════════════════════════════════════════
+//  EXERCISE DATA
+//  To add a real GIF: set gif: "path/to/your.gif"
+// ══════════════════════════════════════════════════════
+const exercises = [
+  {
+    icon: "🌬️",
+    gif: "https://media1.tenor.com/m/izWb42XAEX4AAAAC/breathing-exercise.gif",
+    en: {
+      title: "Deep Breathing",
+      desc: "Sit up straight in your chair. Breathe in slowly through your nose for 4 counts. Breathe out gently through your mouth for 6 counts. Feel your shoulders relax.",
+      tip: "⚠️ This is your warm-up. Take it slowly and gently.",
+      reps: "5 deep breaths",
+      speak: "Deep breathing warm-up. Sit up straight. Breathe in for 4 counts through your nose. Breathe out for 6 counts through your mouth. Do this 5 times."
+    },
+    hi: {
+      title: "गहरी सांस",
+      desc: "कुर्सी पर सीधे बैठें। नाक से 4 गिनती तक धीरे-धीरे सांस लें। मुंह से 6 गिनती तक धीरे सांस छोड़ें। कंधे ढीले रखें।",
+      tip: "⚠️ यह वार्म-अप है। धीरे-धीरे करें।",
+      reps: "5 बार",
+      speak: "गहरी सांस वाला वार्म-अप। सीधे बैठें। नाक से 4 गिनती में सांस लें। मुंह से 6 गिनती में सांस छोड़ें। पाँच बार करें।"
+    }
+  },
+  {
+    icon: "🦵",
+    gif: "https://media1.tenor.com/m/r-YO-BLmdSUAAAAC/seated-knee-lifts.gif",
+    en: {
+      title: "Seated Knee Lifts",
+      desc: "Sit in your chair with your back straight. Slowly lift your right knee toward your chest, hold for 2 seconds, then lower it. Repeat with your left knee.",
+      tip: "⚠️ Keep your back pressed against the chair back. Go slowly.",
+      reps: "8 reps each leg",
+      speak: "Seated knee lifts. Sit with your back straight. Lift your right knee slowly, hold for 2 seconds, then lower. Repeat on the left. Do 8 times on each side."
+    },
+    hi: {
+      title: "बैठकर घुटना उठाना",
+      desc: "कुर्सी पर पीठ सीधी करके बैठें। धीरे-धीरे दाहिना घुटना छाती की ओर उठाएं, 2 सेकंड रोकें, फिर नीचे रखें। बाएं घुटने से दोहराएं।",
+      tip: "⚠️ पीठ कुर्सी से लगाए रखें। धीरे करें।",
+      reps: "प्रत्येक पैर 8 बार",
+      speak: "बैठकर घुटना उठाना। पीठ सीधी रखें। दाहिना घुटना धीरे उठाएं, 2 सेकंड रोकें, फिर नीचे रखें। दोनों तरफ 8 बार करें।"
+    }
+  },
+  {
+    icon: "🪑",
+    gif: "https://media1.tenor.com/m/unl3QUUWTmkAAAAC/sit-to-stand-sit.gif",
+    en: {
+      title: "Chair Stand",
+      desc: "Sit at the front edge of your chair. Place your feet flat on the floor. Lean slightly forward and slowly rise to standing. Pause, then sit back down gently.",
+      tip: "⚠️ Hold the armrests if needed. Do not rush.",
+      reps: "8 reps · rest as needed",
+      speak: "Chair stand exercise. Sit at the front of your chair. Feet flat on the floor. Lean forward and rise to standing slowly. Then sit back down gently. Repeat 8 times. Rest whenever you need."
+    },
+    hi: {
+      title: "कुर्सी से उठना-बैठना",
+      desc: "कुर्सी के अगले हिस्से पर बैठें। पैर जमीन पर सपाट रखें। थोड़ा आगे झुककर धीरे-धीरे खड़े हों। रुकें, फिर धीरे बैठ जाएं।",
+      tip: "⚠️ जरूरत हो तो बाहें पकड़ें। जल्दी न करें।",
+      reps: "8 बार · जब जरूरत हो आराम करें",
+      speak: "कुर्सी से उठना-बैठना। कुर्सी के आगे बैठें। पैर जमीन पर रखें। आगे झुककर धीरे खड़े हों। फिर धीरे बैठें। 8 बार करें।"
+    }
+  },
+  {
+    icon: "🦶",
+    gif: "https://media1.tenor.com/m/zJk03-z7WI4AAAAC/calf-raise-workout.gif",
+    en: {
+      title: "Heel Raises",
+      desc: "Stand behind your chair, holding the backrest for balance. Slowly rise up onto your toes, hold for 2 seconds, then lower your heels gently back to the floor.",
+      tip: "⚠️ Hold the chair firmly. Keep your movements slow and controlled.",
+      reps: "10 reps",
+      speak: "Heel raises. Stand behind your chair and hold the backrest. Rise up onto your toes slowly, hold for 2 seconds, then lower down. Do 10 times."
+    },
+    hi: {
+      title: "एड़ी उठाना",
+      desc: "कुर्सी के पीछे खड़े होकर पीठ पकड़ें। धीरे-धीरे पंजों पर उठें, 2 सेकंड रोकें, फिर एड़ी धीरे नीचे रखें।",
+      tip: "⚠️ कुर्सी मजबूती से पकड़ें। धीरे-धीरे करें।",
+      reps: "10 बार",
+      speak: "एड़ी उठाना। कुर्सी के पीछे खड़े होकर पकड़ें। पंजों पर धीरे उठें, 2 सेकंड रोकें, फिर एड़ी नीचे रखें। 10 बार करें।"
+    }
+  },
+  {
+    icon: "🤲",
+    gif: "https://media1.tenor.com/m/pD7P6JKPL2wAAAAC/workout-calisthenics.gif",
+    en: {
+      title: "Wall Push-Ups",
+      desc: "Stand an arm's length from the wall. Place your palms flat on the wall at shoulder height. Bend your elbows slowly to bring your face close to the wall, then push back.",
+      tip: "⚠️ Keep your body straight like a plank. Do not lock your elbows.",
+      reps: "8 reps",
+      speak: "Wall push-ups. Stand arm's length from the wall. Palms on the wall at shoulder height. Bend elbows slowly, bring face toward wall, then push back. Do 8 times. Keep your body straight throughout."
+    },
+    hi: {
+      title: "दीवार पुश-अप",
+      desc: "दीवार से एक हाथ की दूरी पर खड़े हों। कंधे की ऊंचाई पर हथेलियां दीवार पर रखें। कोहनियां मोड़ते हुए चेहरा दीवार के पास लाएं, फिर वापस धकेलें।",
+      tip: "⚠️ शरीर सीधा रखें। कोहनियां पूरी तरह न खींचें।",
+      reps: "8 बार",
+      speak: "दीवार पुश-अप। दीवार से एक हाथ की दूरी पर खड़े हों। हथेलियां कंधे की ऊंचाई पर रखें। कोहनियां मोड़ें, फिर वापस धकेलें। 8 बार करें।"
+    }
+  },
+  {
+    icon: "🔄",
+    gif: "https://i.makeagif.com/media/1-10-2025/Rhi7UA.gif",
+    en: {
+      title: "Shoulder Rolls",
+      desc: "Sit or stand comfortably. Slowly roll both shoulders forward in a big circle 5 times, then backward 5 times. Breathe deeply throughout.",
+      tip: "⚠️ This is your cool-down. Move gently. You did great today!",
+      reps: "5 forward · 5 backward",
+      speak: "Shoulder rolls, your cool-down. Roll both shoulders forward slowly in a big circle, 5 times. Then roll backward 5 times. Breathe deeply. Wonderful work today!"
+    },
+    hi: {
+      title: "कंधा घुमाना",
+      desc: "आराम से बैठें या खड़े हों। दोनों कंधे धीरे-धीरे आगे की ओर 5 बार गोल घुमाएं, फिर पीछे की ओर 5 बार। गहरी सांस लेते रहें।",
+      tip: "⚠️ यह कूल-डाउन है। धीरे करें। आज आपने बहुत अच्छा किया!",
+      reps: "आगे 5 · पीछे 5",
+      speak: "कंधा घुमाना, कूल-डाउन। दोनों कंधे आगे 5 बार गोल घुमाएं। फिर पीछे 5 बार। गहरी सांस लें। आज आपने शानदार काम किया!"
+    }
+  }
+];
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let lang = 'en';
+let current = 0;
+let voices = [];
+let speaking = false;
+
+// ══════════════════════════════════════════════════════
+//  LANG
+// ══════════════════════════════════════════════════════
+function setLang(l) {
+  lang = l;
+  document.getElementById('btnEn').classList.toggle('selected', l === 'en');
+  document.getElementById('btnHi').classList.toggle('selected', l === 'hi');
+  document.documentElement.lang = (l === 'hi') ? 'hi' : 'en';
+  updateScreen();
+}
+
+function toggleLang() {
+  setLang(lang === 'en' ? 'hi' : 'en');
+  document.getElementById('langToggle').textContent = lang === 'en' ? 'हिंदी' : 'English';
+}
+
+// ══════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════
+function startApp() {
+  stopSpeech();
+  document.getElementById('welcomeScreen').classList.add('hidden');
+  document.getElementById('exerciseArea').style.display = 'flex';
+  current = 0;
+  updateScreen();
+}
+
+function nextEx() {
+  stopSpeech();
+  if (current < exercises.length - 1) {
+    current++;
+    updateScreen();
+    window.scrollTo(0, 0);
+  } else {
+    showDone();
+  }
+}
+
+function prevEx() {
+  stopSpeech();
+  if (current > 0) {
+    current--;
+    updateScreen();
+    window.scrollTo(0, 0);
+  }
+}
+
+function restart() {
+  stopSpeech();
+  current = 0;
+  document.getElementById('doneScreen').classList.remove('active');
+  document.getElementById('exerciseArea').style.display = 'flex';
+  updateScreen();
+}
+
+function showDone() {
+  document.getElementById('exerciseArea').style.display = 'none';
+  const ds = document.getElementById('doneScreen');
+  ds.classList.add('active');
+  ds.querySelector('.done-title').textContent = lang === 'hi' ? 'शाबाश! 🎉' : 'Well Done! 🎉';
+  ds.querySelector('.done-msg').textContent = lang === 'hi'
+    ? 'आपने सभी 6 व्यायाम पूरे किए।\nआराम करें और पानी पिएं।'
+    : 'You completed all 6 exercises.\nRest and drink some water.';
+  ds.querySelector('#btnRestart').textContent = lang === 'hi' ? '🔁 फिर से करें' : '🔁 Do it again';
+  speakText(lang === 'hi'
+    ? 'शाबाश! आपने सभी 6 व्यायाम पूरे किए। आराम करें और पानी पिएं।'
+    : 'Well done! You completed all 6 exercises. Rest now and drink some water. You should be very proud.');
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+function updateScreen() {
+  const ex = exercises[current];
+  const t = ex[lang];
+
+  document.getElementById('progressText').textContent = `${current + 1} / ${exercises.length}`;
+  document.getElementById('exTitle').textContent = t.title;
+  document.getElementById('exDesc').textContent = t.desc;
+  document.getElementById('exTip').textContent = t.tip;
+  document.getElementById('repsBadge').textContent = t.reps;
+
+  // Illustration: real GIF if provided, else emoji fallback
+  const wrap = document.getElementById('illustrationWrap');
+  const fallback = document.getElementById('illustFallback');
+  let existingImg = wrap.querySelector('img');
+
+  if (ex.gif) {
+    fallback.style.display = 'none';
+    if (!existingImg) {
+      existingImg = document.createElement('img');
+      wrap.appendChild(existingImg);
+    }
+    existingImg.src = ex.gif;
+    existingImg.alt = t.title;
+  } else {
+    if (existingImg) existingImg.remove();
+    fallback.style.display = 'flex';
+    document.getElementById('illustIcon').textContent = ex.icon;
+    document.getElementById('illustLabel').textContent = lang === 'hi' ? 'सुनने के लिए नीचे बटन दबाएं' : 'Tap Listen for audio guidance';
+  }
+
+  // Language toggle label
+  document.getElementById('langToggle').textContent = lang === 'en' ? 'हिंदी' : 'English';
+
+  // Safety banner
+  document.getElementById('safetyBanner').textContent = lang === 'hi'
+    ? 'दर्द होने पर रुकें · अनिश्चित हो तो डॉक्टर से पूछें'
+    : 'Stop if you feel pain · Ask your doctor if unsure';
+
+  // Listen button label
+  document.getElementById('btnListen').textContent = lang === 'hi' ? '🔊 सुनें' : '🔊 Listen';
+
+  // Next / Back labels
+  document.getElementById('btnNext').textContent = (current === exercises.length - 1)
+    ? (lang === 'hi' ? '✅ पूरा हुआ' : '✅ Finish')
+    : (lang === 'hi' ? 'अगला ▶' : 'Next ▶');
+
+  // Hide prev on first exercise
+  document.getElementById('btnPrev').style.visibility = current === 0 ? 'hidden' : 'visible';
+}
+
+// ══════════════════════════════════════════════════════
+//  SPEECH  (uses device's built-in TTS — zero setup)
+// ══════════════════════════════════════════════════════
+function loadVoices() {
+  voices = window.speechSynthesis.getVoices();
+}
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+}
+
+function stopSpeech() {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+function speakText(text) {
+  if (!('speechSynthesis' in window)) {
+    alert(lang === 'hi' ? 'आपका डिवाइस TTS सपोर्ट नहीं करता।' : 'Speech not supported on this device.');
+    return;
+  }
+  stopSpeech();
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 0.85;   // Slightly slower — easier for seniors
+  utter.pitch = 1.0;
+  utter.volume = 1.0;
+
+  if (lang === 'hi') {
+    utter.lang = 'hi-IN';
+    // Try to find a Hindi voice; fall back gracefully
+    const hiVoice = voices.find(v => v.lang.startsWith('hi'));
+    if (hiVoice) utter.voice = hiVoice;
+    // else: browser will attempt hi-IN anyway; may use default voice
+  } else {
+    utter.lang = 'en-US';
+    const enVoice = voices.find(v => v.lang.startsWith('en') && !v.name.includes('UK'));
+    if (enVoice) utter.voice = enVoice;
+  }
+
+  window.speechSynthesis.speak(utter);
+}
+
+function speakNow() {
+  const ex = exercises[current];
+  speakText(ex[lang].speak);
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+// Kick off voice loading on first user tap (required by iOS)
+document.addEventListener('touchstart', loadVoices, { once: true });
+document.addEventListener('click', loadVoices, { once: true });
+</script>
+</body>
+</html>
